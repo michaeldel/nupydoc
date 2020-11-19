@@ -1,3 +1,6 @@
+run:
+	@poetry run python -m nupydoc
+
 dep:
 	poetry install --no-root
 
