@@ -23,12 +23,12 @@ def display_tree(tree: ModuleTree, prefix=""):
         display_tree(submodule, prefix=f"  {prefix}")
 
 
-def walk_modules(tree: ModuleTree, package: str = ''):
+def walk_modules(tree: ModuleTree, callback: callable, *, package: str = ''):
     prefix = '.' if package else ''
     module = importlib.import_module(f'{prefix}{tree.name}', package=package)
-    print(module.__name__)
+    callback(module)
     for submodule in tree.submodules:
-        walk_modules(submodule, module.__name__)
+        walk_modules(submodule, callback, package=module.__name__)
 
 
 def is_standard_library(module: pkgutil.ModuleInfo) -> bool:  # TODO: find better heuristic
@@ -53,5 +53,5 @@ def compute_module_tree(path: Optional[str] = None) -> Iterable[ModuleTree]:
 
 
 for tree in compute_module_tree():
-    walk_modules(tree)
+    walk_modules(tree, callback=lambda m: print(m.__name__))
 
