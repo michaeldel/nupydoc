@@ -17,12 +17,6 @@ class ModuleTree:
         yield from self.submodules
 
 
-def display_tree(tree: ModuleTree, prefix=""):
-    print(f"{prefix}{tree.name}")
-    for submodule in tree:
-        display_tree(submodule, prefix=f"  {prefix}")
-
-
 def walk_modules(tree: ModuleTree, callback: callable, *, package: str = ''):
     prefix = '.' if package else ''
     module = importlib.import_module(f'{prefix}{tree.name}', package=package)
