@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 import importlib
+import inspect
 import os
 import pkgutil
 
 import setuptools  # fix import order warning in distutils
 
 from dataclasses import dataclass, field
+from types import ModuleType as Module
 from typing import Iterable, List, Optional
-
 
 
 @dataclass
@@ -20,12 +21,23 @@ class ModuleTree:
         yield from self.submodules
 
 
-def walk_modules(tree: ModuleTree, callback: callable, *, package: str = ''):
-    prefix = '.' if package else ''
+def walk_modules(tree: ModuleTree, callback: callable, *, parent: Optional[Module] = None):
+    prefix = '.' if parent else ''
+    package = parent.__name__ if parent else None
     module = importlib.import_module(f'{prefix}{tree.name}', package=package)
-    callback(module)
+
+    callback(tree.name, module, parent)
+    walk_classes(module, callback, module)
+
     for submodule in tree.submodules:
-        walk_modules(submodule, callback, package=module.__name__)
+        walk_modules(submodule, callback, parent=module)
+
+
+def walk_classes(obj: object, callback: callable, module: Module):
+    for name, cls in inspect.getmembers(obj, inspect.isclass):
+        if name.startswith('_'):
+            continue
+        callback(name, cls, module)
 
 
 def is_standard_library(module: pkgutil.ModuleInfo) -> bool:  # TODO: find better heuristic
@@ -49,6 +61,18 @@ def compute_module_tree(path: Optional[str] = None) -> Iterable[ModuleTree]:
         yield tree
 
 
+def process(name: str, obj: object, module: Optional[Module] = None):
+    # assert module is None or getattr(module, name) == obj, (name, obj, module)
+
+    if isinstance(obj, Module):
+        print('MOD', f"{obj.__name__}")
+    elif inspect.isclass(obj):
+        print('CLS', f"{module.__name__}.{name}")
+    elif inspect.isroutine(obj):
+        print('FUN', f"{module.__name__}.{name}")
+    else:
+        raise NotImplementedError
+
 for tree in compute_module_tree():
-    walk_modules(tree, callback=lambda m: print(m.__name__))
+    walk_modules(tree, callback=process)
 
