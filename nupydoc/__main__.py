@@ -4,8 +4,11 @@ import importlib
 import os
 import pkgutil
 
+import setuptools  # fix import order warning in distutils
+
 from dataclasses import dataclass, field
 from typing import Iterable, List, Optional
+
 
 
 @dataclass
