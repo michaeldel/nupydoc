@@ -30,6 +30,7 @@ def walk_modules(tree: ModuleTree, callback: callable, *, parent: Optional[Modul
 
     walk_classes(module, callback, module)
     walk_routines(module, callback, module)
+    walk_data(module, callback, module)
 
     for submodule in tree.submodules:
         walk_modules(submodule, callback, parent=module)
@@ -49,8 +50,22 @@ def walk_routines(obj: object, callback: callable, module: Module):
         callback(name, cls, module)
 
 
+def walk_data(obj: object, callback: callable, module: Module):
+    for name, cls in inspect.getmembers(obj, isdata):
+        if name.startswith('_'):
+            continue
+        callback(name, cls, module)
+
+
 def is_standard_library(module: pkgutil.ModuleInfo) -> bool:  # TODO: find better heuristic
     return 'site-packages' not in module.module_finder.path
+
+
+def isdata(obj: object) -> bool:
+    return not (
+        inspect.ismodule(obj) or inspect.isclass(obj) or inspect.isroutine(obj) or
+        inspect.isframe(obj) or inspect.istraceback(obj) or inspect.iscode(obj)
+    )
 
 
 def compute_module_tree(path: Optional[str] = None) -> Iterable[ModuleTree]:
@@ -79,6 +94,8 @@ def process(name: str, obj: object, module: Optional[Module] = None):
         print('CLS', f"{module.__name__}.{name}")
     elif inspect.isroutine(obj):
         print('FUN', f"{module.__name__}.{name}")
+    elif isdata(obj):
+        print('DAT', f"{module.__name__}.{name}")
     else:
         raise NotImplementedError
 
