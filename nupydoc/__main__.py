@@ -27,7 +27,9 @@ def walk_modules(tree: ModuleTree, callback: callable, *, parent: Optional[Modul
     module = importlib.import_module(f'{prefix}{tree.name}', package=package)
 
     callback(tree.name, module, parent)
+
     walk_classes(module, callback, module)
+    walk_routines(module, callback, module)
 
     for submodule in tree.submodules:
         walk_modules(submodule, callback, parent=module)
@@ -35,6 +37,13 @@ def walk_modules(tree: ModuleTree, callback: callable, *, parent: Optional[Modul
 
 def walk_classes(obj: object, callback: callable, module: Module):
     for name, cls in inspect.getmembers(obj, inspect.isclass):
+        if name.startswith('_'):
+            continue
+        callback(name, cls, module)
+
+
+def walk_routines(obj: object, callback: callable, module: Module):
+    for name, cls in inspect.getmembers(obj, inspect.isroutine):
         if name.startswith('_'):
             continue
         callback(name, cls, module)
