@@ -87,7 +87,8 @@ def compute_module_tree(path: Optional[str] = None) -> Iterable[ModuleTree]:
 
 def get_doc(obj: object) -> str:  # TODO: test it
     try:
-        return (inspect.getdoc(obj) or "").split('\n\n')[0]
+        # TODO: handle source code examples (TAB-based heuristic ?)
+        return (inspect.getdoc(obj) or "").split('\n\n')[0].replace('\n', ' ')
     except IndexError:
         return ""
 
