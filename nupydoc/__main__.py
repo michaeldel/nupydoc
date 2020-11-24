@@ -96,13 +96,13 @@ def process(name: str, obj: object, module: Optional[Module] = None):
     # assert module is None or getattr(module, name) == obj, (name, obj, module)
 
     if isinstance(obj, Module):
-        print('MOD', f"{obj.__name__}")
+        print('MOD', f"{obj.__name__}", get_doc(obj))
     elif inspect.isclass(obj):
-        print('CLS', f"{module.__name__}.{name}")
+        print('CLS', f"{module.__name__}.{name}", get_doc(obj))
     elif inspect.isroutine(obj):
-        print('FUN', f"{module.__name__}.{name}")
+        print('FUN', f"{module.__name__}.{name}", get_doc(obj))
     elif isdata(obj):
-        print('DAT', f"{module.__name__}.{name}")
+        print('DAT', f"{module.__name__}.{name}", get_doc(obj))
     else:
         raise NotImplementedError
 
