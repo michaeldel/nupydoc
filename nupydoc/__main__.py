@@ -85,6 +85,13 @@ def compute_module_tree(path: Optional[str] = None) -> Iterable[ModuleTree]:
         yield tree
 
 
+def get_doc(obj: object) -> str:  # TODO: test it
+    try:
+        return (inspect.getdoc(obj) or "").split('\n\n')[0]
+    except IndexError:
+        return ""
+
+
 def process(name: str, obj: object, module: Optional[Module] = None):
     # assert module is None or getattr(module, name) == obj, (name, obj, module)
 
